@@ -1,0 +1,86 @@
+asyncapi: 2.6.0
+info:
+  title: Showroomprivé - Événements Ventes
+  version: 1.0.0
+  description: |
+    ![Showroomprivé](https://wsrv.nl/?url=https%3A%2F%2Fstatic.cedex.it.showroomprive.com%2Fv4%2F0%2F_img%2Flogo-srp.svg&output=png&h=200)
+
+    **Contrat asynchrone des ventes Showroomprivé, sur Azure Service Bus.**
+
+    Quand une vente passe au statut `programmee` (API Ventes, `PUT /ventes/{venteId}`), le back-office publie un message `VentePubliee` sur le topic `ventes.publiees`.
+    Les équipes front, apps et B2B (Mirakl) s'y abonnent pour préparer la mise en ligne. Ce contrat est gouverné comme le contrat synchrone : rédigé et versionné dans Spec Hub.
+servers:
+  demo:
+    url: srp-demo.servicebus.windows.net
+    protocol: amqp
+    protocolVersion: '1.0'
+    description: Namespace Azure Service Bus de démonstration (fictif).
+defaultContentType: application/json
+channels:
+  ventes.publiees:
+    description: Topic Service Bus des ventes programmées.
+    subscribe:
+      operationId: recevoirVentePubliee
+      summary: Recevoir les ventes programmées
+      description: Message reçu par les abonnés quand une vente est programmée.
+      message:
+        $ref: '#/components/messages/VentePubliee'
+components:
+  messages:
+    VentePubliee:
+      name: VentePubliee
+      title: Vente publiée
+      summary: Une vente vient d'être programmée pour la mise en ligne.
+      payload:
+        $ref: '#/components/schemas/VentePubliee'
+      examples:
+        - name: venteMaisonLumiere
+          summary: Vente Maison Lumière programmée
+          payload:
+            evenementId: 6f1c2a9e-3b7d-4c55-9e21-0a8b7c6d5e4f
+            type: vente.publiee
+            publieLe: '2026-11-05T13:20:00Z'
+            vente:
+              id: VTE-20261112-0042
+              marque: Maison Lumière
+              statut: programmee
+              dateOuverture: '2026-11-12T07:00:00Z'
+              nombreLots: 1
+  schemas:
+    VentePubliee:
+      type: object
+      required: [evenementId, type, publieLe, vente]
+      properties:
+        evenementId:
+          type: string
+          format: uuid
+          description: Identifiant unique de l'événement (idempotence côté abonnés).
+        type:
+          type: string
+          const: vente.publiee
+          description: Type d'événement.
+        publieLe:
+          type: string
+          format: date-time
+          description: Date de publication de l'événement (UTC).
+        vente:
+          type: object
+          description: Résumé de la vente programmée.
+          properties:
+            id:
+              type: string
+              description: Identifiant de la vente.
+            marque:
+              type: string
+              description: Marque partenaire.
+            statut:
+              type: string
+              enum: [programmee]
+              description: Statut de la vente.
+            dateOuverture:
+              type: string
+              format: date-time
+              description: Ouverture de la vente (UTC).
+            nombreLots:
+              type: integer
+              description: Nombre de lots rattachés.

@@ -1,0 +1,341 @@
+openapi: 3.0.3
+info:
+  title: Showroomprivé - API Ventes
+  version: 1.0.0
+  description: |
+    ![Showroomprivé](https://wsrv.nl/?url=https%3A%2F%2Fstatic.cedex.it.showroomprive.com%2Fv4%2F0%2F_img%2Flogo-srp.svg&output=png&h=200)
+
+    **Contrat de l'API Ventes de Showroomprivé.**
+
+    Une *vente* est une vente événementielle d'une marque : ses dates d'ouverture et de fermeture, ses lots et son statut de mise en ligne.
+    Ce contrat est la référence partagée entre l'équipe qui expose l'API (back-office) et les équipes qui la consomment (front web, apps iOS et Android, B2B Mirakl).
+
+    - Le contrat est rédigé et versionné dans **Spec Hub**, synchronisé avec GitHub.
+    - La collection est générée depuis ce contrat : elle reste alignée à chaque changement.
+    - Le **mock** sert les exemples de ce contrat : les équipes consommatrices codent sans attendre l'implémentation.
+    - La publication d'une vente émet un événement `vente.publiee` sur Azure Service Bus (voir le contrat AsyncAPI « Showroomprivé - Événements Ventes »).
+  contact:
+    name: Équipe Back-office Showroomprivé
+servers:
+  - url: https://api.showroomprive.example/catalogue/v1
+    description: Environnement de démonstration (fictif)
+tags:
+  - name: Ventes
+    description: Création, consultation, mise à jour et suppression des ventes événementielles.
+security:
+  - bearerAuth: []
+paths:
+  /ventes:
+    post:
+      tags: [Ventes]
+      operationId: creerVente
+      summary: Créer une vente
+      description: Crée une vente événementielle pour une marque, au statut `brouillon`. Les lots sont rattachés à la vente dès sa création.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VenteCreation'
+            example:
+              marque: Maison Lumière
+              titre: Maison Lumière - Collection Hiver
+              univers: mode
+              dateOuverture: '2026-11-12T07:00:00Z'
+              dateFermeture: '2026-11-17T22:00:00Z'
+              lots:
+                - sku: ML-MANT-001
+                  libelle: Manteau long en laine
+                  prixPublic: 289.0
+                  prixVente: 119.0
+                  stock: 240
+      responses:
+        '201':
+          description: Vente créée.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vente'
+              example:
+                id: VTE-20261112-0042
+                marque: Maison Lumière
+                titre: Maison Lumière - Collection Hiver
+                univers: mode
+                statut: brouillon
+                dateOuverture: '2026-11-12T07:00:00Z'
+                dateFermeture: '2026-11-17T22:00:00Z'
+                lots:
+                  - sku: ML-MANT-001
+                    libelle: Manteau long en laine
+                    prixPublic: 289.0
+                    prixVente: 119.0
+                    stock: 240
+                creeLe: '2026-11-05T13:05:00Z'
+                misAJourLe: '2026-11-05T13:05:00Z'
+        '400':
+          $ref: '#/components/responses/RequeteInvalide'
+        '401':
+          $ref: '#/components/responses/NonAuthentifie'
+  /ventes/{venteId}:
+    parameters:
+      - name: venteId
+        in: path
+        required: true
+        description: Identifiant de la vente.
+        schema:
+          type: string
+          example: VTE-20261112-0042
+    get:
+      tags: [Ventes]
+      operationId: lireVente
+      summary: Consulter une vente
+      description: Renvoie une vente avec ses lots et son statut de mise en ligne.
+      responses:
+        '200':
+          description: La vente demandée.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vente'
+              example:
+                id: VTE-20261112-0042
+                marque: Maison Lumière
+                titre: Maison Lumière - Collection Hiver
+                univers: mode
+                statut: programmee
+                dateOuverture: '2026-11-12T07:00:00Z'
+                dateFermeture: '2026-11-17T22:00:00Z'
+                lots:
+                  - sku: ML-MANT-001
+                    libelle: Manteau long en laine
+                    prixPublic: 289.0
+                    prixVente: 119.0
+                    stock: 240
+                creeLe: '2026-11-05T13:05:00Z'
+                misAJourLe: '2026-11-05T13:20:00Z'
+        '401':
+          $ref: '#/components/responses/NonAuthentifie'
+        '404':
+          $ref: '#/components/responses/VenteIntrouvable'
+    put:
+      tags: [Ventes]
+      operationId: mettreAJourVente
+      summary: Mettre à jour une vente
+      description: Remplace les informations d'une vente. Passer le statut à `programmee` déclenche la publication de l'événement `vente.publiee`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VenteMiseAJour'
+            example:
+              titre: Maison Lumière - Collection Hiver
+              statut: programmee
+              dateOuverture: '2026-11-12T07:00:00Z'
+              dateFermeture: '2026-11-17T22:00:00Z'
+      responses:
+        '200':
+          description: Vente mise à jour.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vente'
+              example:
+                id: VTE-20261112-0042
+                marque: Maison Lumière
+                titre: Maison Lumière - Collection Hiver
+                univers: mode
+                statut: programmee
+                dateOuverture: '2026-11-12T07:00:00Z'
+                dateFermeture: '2026-11-17T22:00:00Z'
+                lots:
+                  - sku: ML-MANT-001
+                    libelle: Manteau long en laine
+                    prixPublic: 289.0
+                    prixVente: 119.0
+                    stock: 240
+                creeLe: '2026-11-05T13:05:00Z'
+                misAJourLe: '2026-11-05T13:20:00Z'
+        '400':
+          $ref: '#/components/responses/RequeteInvalide'
+        '401':
+          $ref: '#/components/responses/NonAuthentifie'
+        '404':
+          $ref: '#/components/responses/VenteIntrouvable'
+    delete:
+      tags: [Ventes]
+      operationId: supprimerVente
+      summary: Supprimer une vente
+      description: Supprime une vente qui n'est pas encore ouverte.
+      responses:
+        '204':
+          description: Vente supprimée.
+        '401':
+          $ref: '#/components/responses/NonAuthentifie'
+        '404':
+          $ref: '#/components/responses/VenteIntrouvable'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Jeton d'accès de l'équipe consommatrice.
+  responses:
+    RequeteInvalide:
+      description: Requête invalide.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Erreur'
+          example:
+            code: REQUETE_INVALIDE
+            message: La date de fermeture doit être postérieure à la date d'ouverture.
+    NonAuthentifie:
+      description: Jeton absent ou invalide.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Erreur'
+          example:
+            code: NON_AUTHENTIFIE
+            message: Jeton d'accès absent ou expiré.
+    VenteIntrouvable:
+      description: Aucune vente avec cet identifiant.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Erreur'
+          example:
+            code: VENTE_INTROUVABLE
+            message: Aucune vente ne correspond à l'identifiant VTE-20261112-0042.
+  schemas:
+    Lot:
+      type: object
+      description: Article proposé dans une vente.
+      required: [sku, libelle, prixVente, stock]
+      properties:
+        sku:
+          type: string
+          description: Référence de l'article.
+          example: ML-MANT-001
+        libelle:
+          type: string
+          description: Libellé affiché sur le site et les apps.
+          example: Manteau long en laine
+        prixPublic:
+          type: number
+          format: float
+          description: Prix public conseillé, en euros.
+          example: 289.0
+        prixVente:
+          type: number
+          format: float
+          description: Prix pendant la vente, en euros.
+          example: 119.0
+        stock:
+          type: integer
+          description: Quantité disponible pour la vente.
+          example: 240
+    VenteCreation:
+      type: object
+      description: Données nécessaires pour créer une vente.
+      required: [marque, titre, dateOuverture, dateFermeture]
+      properties:
+        marque:
+          type: string
+          description: Marque partenaire de la vente.
+          example: Maison Lumière
+        titre:
+          type: string
+          description: Titre affiché de la vente.
+          example: Maison Lumière - Collection Hiver
+        univers:
+          type: string
+          description: Univers de la vente.
+          enum: [mode, maison, beaute, enfant, voyage]
+          example: mode
+        dateOuverture:
+          type: string
+          format: date-time
+          description: Ouverture de la vente (UTC).
+        dateFermeture:
+          type: string
+          format: date-time
+          description: Fermeture de la vente (UTC).
+        lots:
+          type: array
+          description: Lots rattachés à la vente.
+          items:
+            $ref: '#/components/schemas/Lot'
+    VenteMiseAJour:
+      type: object
+      description: Champs modifiables d'une vente.
+      properties:
+        titre:
+          type: string
+          description: Titre affiché de la vente.
+        statut:
+          $ref: '#/components/schemas/StatutVente'
+        dateOuverture:
+          type: string
+          format: date-time
+          description: Ouverture de la vente (UTC).
+        dateFermeture:
+          type: string
+          format: date-time
+          description: Fermeture de la vente (UTC).
+    StatutVente:
+      type: string
+      description: Statut de mise en ligne de la vente.
+      enum: [brouillon, programmee, en_ligne, terminee]
+      example: programmee
+    Vente:
+      type: object
+      description: Vente événementielle d'une marque.
+      properties:
+        id:
+          type: string
+          description: Identifiant de la vente.
+          example: VTE-20261112-0042
+        marque:
+          type: string
+          description: Marque partenaire.
+        titre:
+          type: string
+          description: Titre affiché.
+        univers:
+          type: string
+          description: Univers de la vente.
+        statut:
+          $ref: '#/components/schemas/StatutVente'
+        dateOuverture:
+          type: string
+          format: date-time
+          description: Ouverture de la vente (UTC).
+        dateFermeture:
+          type: string
+          format: date-time
+          description: Fermeture de la vente (UTC).
+        lots:
+          type: array
+          description: Lots de la vente.
+          items:
+            $ref: '#/components/schemas/Lot'
+        creeLe:
+          type: string
+          format: date-time
+          description: Date de création.
+        misAJourLe:
+          type: string
+          format: date-time
+          description: Date de dernière mise à jour.
+    Erreur:
+      type: object
+      description: Erreur renvoyée par l'API.
+      properties:
+        code:
+          type: string
+          description: Code d'erreur stable.
+        message:
+          type: string
+          description: Message lisible.
