@@ -122,18 +122,27 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Erreur'
+          example:
+            code: REQUETE_INVALIDE
+            message: La date de fermeture doit être postérieure à la date d'ouverture.
     NonAuthentifie:
       description: Jeton absent ou invalide.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Erreur'
+          example:
+            code: NON_AUTHENTIFIE
+            message: Jeton d'accès absent ou expiré.
     VenteIntrouvable:
       description: Aucune vente avec cet identifiant.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Erreur'
+          example:
+            code: VENTE_INTROUVABLE
+            message: Aucune vente ne correspond à l'identifiant VTE-20261112-0042.
   schemas:
     Lot:
       type: object
