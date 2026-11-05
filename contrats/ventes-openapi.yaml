@@ -37,18 +37,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/VenteCreation'
-            example:
-              marque: Maison Lumière
-              titre: Maison Lumière - Collection Hiver
-              univers: mode
-              dateOuverture: '2026-11-12T07:00:00Z'
-              dateFermeture: '2026-11-17T22:00:00Z'
-              lots:
-                - sku: ML-MANT-001
-                  libelle: Manteau long en laine
-                  prixPublic: 289.0
-                  prixVente: 119.0
-                  stock: 240
       responses:
         '201':
           description: Vente créée.
@@ -128,11 +116,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/VenteMiseAJour'
-            example:
-              titre: Maison Lumière - Collection Hiver
-              statut: programmee
-              dateOuverture: '2026-11-12T07:00:00Z'
-              dateFermeture: '2026-11-17T22:00:00Z'
       responses:
         '200':
           description: Vente mise à jour.
