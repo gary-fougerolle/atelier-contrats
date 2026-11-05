@@ -44,22 +44,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Vente'
-              example:
-                id: VTE-20261112-0042
-                marque: Maison Lumière
-                titre: Maison Lumière - Collection Hiver
-                univers: mode
-                statut: brouillon
-                dateOuverture: '2026-11-12T07:00:00Z'
-                dateFermeture: '2026-11-17T22:00:00Z'
-                lots:
-                  - sku: ML-MANT-001
-                    libelle: Manteau long en laine
-                    prixPublic: 289.0
-                    prixVente: 119.0
-                    stock: 240
-                creeLe: '2026-11-05T13:05:00Z'
-                misAJourLe: '2026-11-05T13:05:00Z'
         '400':
           $ref: '#/components/responses/RequeteInvalide'
         '401':
@@ -85,22 +69,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Vente'
-              example:
-                id: VTE-20261112-0042
-                marque: Maison Lumière
-                titre: Maison Lumière - Collection Hiver
-                univers: mode
-                statut: programmee
-                dateOuverture: '2026-11-12T07:00:00Z'
-                dateFermeture: '2026-11-17T22:00:00Z'
-                lots:
-                  - sku: ML-MANT-001
-                    libelle: Manteau long en laine
-                    prixPublic: 289.0
-                    prixVente: 119.0
-                    stock: 240
-                creeLe: '2026-11-05T13:05:00Z'
-                misAJourLe: '2026-11-05T13:20:00Z'
         '401':
           $ref: '#/components/responses/NonAuthentifie'
         '404':
@@ -123,22 +91,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Vente'
-              example:
-                id: VTE-20261112-0042
-                marque: Maison Lumière
-                titre: Maison Lumière - Collection Hiver
-                univers: mode
-                statut: programmee
-                dateOuverture: '2026-11-12T07:00:00Z'
-                dateFermeture: '2026-11-17T22:00:00Z'
-                lots:
-                  - sku: ML-MANT-001
-                    libelle: Manteau long en laine
-                    prixPublic: 289.0
-                    prixVente: 119.0
-                    stock: 240
-                creeLe: '2026-11-05T13:05:00Z'
-                misAJourLe: '2026-11-05T13:20:00Z'
         '400':
           $ref: '#/components/responses/RequeteInvalide'
         '401':
@@ -170,27 +122,18 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Erreur'
-          example:
-            code: REQUETE_INVALIDE
-            message: La date de fermeture doit être postérieure à la date d'ouverture.
     NonAuthentifie:
       description: Jeton absent ou invalide.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Erreur'
-          example:
-            code: NON_AUTHENTIFIE
-            message: Jeton d'accès absent ou expiré.
     VenteIntrouvable:
       description: Aucune vente avec cet identifiant.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Erreur'
-          example:
-            code: VENTE_INTROUVABLE
-            message: Aucune vente ne correspond à l'identifiant VTE-20261112-0042.
   schemas:
     Lot:
       type: object
@@ -241,10 +184,12 @@ components:
           type: string
           format: date-time
           description: Ouverture de la vente (UTC).
+          example: '2026-11-12T07:00:00Z'
         dateFermeture:
           type: string
           format: date-time
           description: Fermeture de la vente (UTC).
+          example: '2026-11-17T22:00:00Z'
         lots:
           type: array
           description: Lots rattachés à la vente.
@@ -263,10 +208,12 @@ components:
           type: string
           format: date-time
           description: Ouverture de la vente (UTC).
+          example: '2026-11-12T07:00:00Z'
         dateFermeture:
           type: string
           format: date-time
           description: Fermeture de la vente (UTC).
+          example: '2026-11-17T22:00:00Z'
     StatutVente:
       type: string
       description: Statut de mise en ligne de la vente.
@@ -283,22 +230,27 @@ components:
         marque:
           type: string
           description: Marque partenaire.
+          example: Maison Lumière
         titre:
           type: string
           description: Titre affiché.
+          example: Maison Lumière - Collection Hiver
         univers:
           type: string
           description: Univers de la vente.
+          example: mode
         statut:
           $ref: '#/components/schemas/StatutVente'
         dateOuverture:
           type: string
           format: date-time
           description: Ouverture de la vente (UTC).
+          example: '2026-11-12T07:00:00Z'
         dateFermeture:
           type: string
           format: date-time
           description: Fermeture de la vente (UTC).
+          example: '2026-11-17T22:00:00Z'
         lots:
           type: array
           description: Lots de la vente.
@@ -308,10 +260,12 @@ components:
           type: string
           format: date-time
           description: Date de création.
+          example: '2026-11-05T13:05:00Z'
         misAJourLe:
           type: string
           format: date-time
           description: Date de dernière mise à jour.
+          example: '2026-11-05T13:20:00Z'
     Erreur:
       type: object
       description: Erreur renvoyée par l'API.
